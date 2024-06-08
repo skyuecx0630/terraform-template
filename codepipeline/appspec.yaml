@@ -1,0 +1,13 @@
+version: 0.0
+Resources:
+  - TargetService:
+      Type: AWS::ECS::Service
+      Properties:
+        TaskDefinition: <TASK_DEFINITION>
+        LoadBalancerInfo:
+          ContainerName: myapp
+          ContainerPort: 8080
+        CapacityProviderStrategy:
+          - Base: 0
+            CapacityProvider: FARGATE
+            Weight: 2
