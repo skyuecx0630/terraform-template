@@ -15,7 +15,7 @@ resource "aws_ecs_task_definition" "task_definition" {
     name      = v.name
     image     = v.image
     essential = true
-    port_mappings = [
+    portMappings = [
       {
         containerPort = v.port
         hostPort      = v.port
@@ -24,12 +24,13 @@ resource "aws_ecs_task_definition" "task_definition" {
     healthcheck = {
       command = ["CMD-SHELL", "curl -f http://localhost:${v.port}${v.healthcheck_path} || exit 1"]
     }
-    log_configuration = {
+    logConfiguration = {
       logDriver = "awslogs"
       options = {
         awslogs-group         = aws_cloudwatch_log_group.log_group[each.key].name
         awslogs-region        = var.region
         awslogs-stream-prefix = v.name
+        awslogs-create-group  = "true"
       }
     }
     environment = v.environment
@@ -74,4 +75,3 @@ resource "aws_cloudwatch_log_group" "log_group" {
 
   retention_in_days = 14
 }
-
