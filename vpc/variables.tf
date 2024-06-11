@@ -7,9 +7,9 @@ variable "vpc" {
       name = "skills-vpc"
       cidr = "10.0.0.0/16"
 
-      enable_internet_gateway = true
-      enable_nat_gateway      = true
-
+      enable_internet_gateway    = true
+      enable_nat_gateway         = true
+      enable_s3_gateway_endpoint = true
 
       empty_default_security_group = true
 

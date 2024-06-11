@@ -1,3 +1,5 @@
+data "aws_region" "current" {}
+
 locals {
   is_logs = { for k, v in var.vpc : k => v.flow_log_destination_type == "cloud-watch-logs" }
 }
@@ -44,4 +46,18 @@ module "vpc" {
   create_flow_log_cloudwatch_iam_role             = local.is_logs[each.key]
   create_flow_log_cloudwatch_log_group            = local.is_logs[each.key]
   flow_log_cloudwatch_log_group_retention_in_days = 90
+}
+
+resource "aws_vpc_endpoint" "endpoint" {
+  for_each = { for k, v in var.vpc : k => v if v.enable_s3_gateway_endpoint }
+
+  vpc_id            = module.vpc[each.key].vpc_id
+  service_name      = "com.amazonaws.${data.aws_region.current.name}.s3"
+  vpc_endpoint_type = "Gateway"
+
+  route_table_ids = concat(
+    module.vpc[each.key].public_route_table_ids,
+    module.vpc[each.key].private_route_table_ids,
+    module.vpc[each.key].database_route_table_ids,
+  )
 }
