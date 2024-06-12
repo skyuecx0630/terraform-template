@@ -3,16 +3,19 @@ resource "aws_ecr_repository" "repository" {
 
   name = each.key
 
-  encryption_configuration {
-    encryption_type = "KMS"
-    kms_key         = module.kms_key[each.key].key_arn
+  dynamic "encryption_configuration" {
+    for_each = try(each.value.encrypted, true) ? [1] : []
+    content {
+      encryption_type = "KMS"
+      kms_key         = module.kms_key[each.key].key_arn
+    }
   }
 
   image_scanning_configuration {
-    scan_on_push = true
+    scan_on_push = try(each.value.scan_on_push, true)
   }
 
-  image_tag_mutability = "IMMUTABLE"
+  image_tag_mutability = try(each.value.immutable, true) ? "IMMUTABLE" : "MUTABLE"
 }
 
 module "kms_key" {
@@ -20,6 +23,8 @@ module "kms_key" {
   version = "~> 3.0"
 
   for_each = var.repositories
+
+  create = try(each.value.encrypted, true)
 
   description             = "KMS key for encrypting ECR image ${each.key}"
   deletion_window_in_days = 7

@@ -4,5 +4,10 @@ variable "repositories" {
 
   default = {
     myapp = {}
+    # test = {
+    #   encrypted    = false
+    #   immutable    = false
+    #   scan_on_push = false
+    # }
   }
 }
