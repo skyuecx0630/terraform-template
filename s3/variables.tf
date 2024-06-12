@@ -14,6 +14,8 @@ variable "buckets" {
       policy_https          = true
       policy_elb_log        = false
       enable_kms_encryption = true
+      # For CloudFront OAC
+      # https://aws.amazon.com/blogs/networking-and-content-delivery/amazon-cloudfront-introduces-origin-access-control-oac/
     }
   }
 }
