@@ -17,30 +17,33 @@ variable "cluster" {
       use_fargate = false
 
       node_group = {
-        name            = "skills-worker"
-        use_name_prefix = false
+        ng1 = {
+          name            = "skills-worker-ng"
+          worker_name     = "skills-worker"
+          use_name_prefix = false
 
-        min_size     = 2
-        max_size     = 8
-        desired_size = 2
+          min_size     = 2
+          max_size     = 8
+          desired_size = 2
 
-        # Available AMIs
-        # AL2_x86_64, AL2_ARM_64
-        # BOTTLEROCKET_x86_64, BOTTLEROCKET_ARM_64
-        # AL2023_x86_64_STANDARD, AL2023_ARM_64_STANDARD
-        ami_type       = "AL2_x86_64"
-        instance_types = ["t3.medium"]
+          # Available AMIs
+          # AL2_x86_64, AL2_ARM_64
+          # BOTTLEROCKET_x86_64, BOTTLEROCKET_ARM_64
+          # AL2023_x86_64_STANDARD, AL2023_ARM_64_STANDARD
+          ami_type       = "AL2_x86_64"
+          instance_types = ["t3.medium"]
 
-        labels = {
-          # management = "addon"
+          labels = {
+            # management = "addon"
+          }
+          taints = [
+            # {
+            #   effect = "NO_SCHEDULE"
+            #   key    = "management"
+            #   value  = "addon"
+            # }
+          ]
         }
-        taints = [
-          # {
-          #   effect = "NO_SCHEDULE"
-          #   key    = "management"
-          #   value  = "addon"
-          # }
-        ]
       }
     }
 

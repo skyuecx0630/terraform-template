@@ -8,7 +8,7 @@ module "eks" {
 
   vpc_id                   = each.value.vpc_id
   subnet_ids               = each.value.subnet_ids
-  control_plane_subnet_ids = each.value.control_plane_subnet_ids
+  control_plane_subnet_ids = try(each.value.control_plane_subnet_ids, null)
 
   enable_cluster_creator_admin_permissions = true
   cluster_endpoint_public_access           = each.value.cluster_endpoint_public_access
@@ -24,17 +24,19 @@ module "eks" {
     }
   } : {}
 
-  eks_managed_node_groups = each.value.use_fargate ? {} : {
-    node_group = {
-      name            = each.value.node_group.name
-      use_name_prefix = each.value.node_group.use_name_prefix
+  eks_managed_node_groups = {
+    for k, v in each.value.node_group : k => {
+      name                     = v.name
+      use_name_prefix          = v.use_name_prefix
+      iam_role_use_name_prefix = false
+      iam_role_name            = "${v.name}-role"
 
-      min_size     = each.value.node_group.min_size
-      max_size     = each.value.node_group.max_size
-      desired_size = each.value.node_group.desired_size
+      min_size     = v.min_size
+      max_size     = v.max_size
+      desired_size = v.desired_size
 
-      labels = each.value.node_group.labels
-      taints = each.value.node_group.taints
+      labels = v.labels
+      taints = v.taints
 
       block_device_mappings = {
         xvda = {
@@ -59,6 +61,7 @@ module "eks" {
       }
 
       launch_template_tags = {
+        Name = v.worker_name
         # enable discovery of autoscaling groups by cluster-autoscaler
         "k8s.io/cluster-autoscaler/enabled" : true,
         "k8s.io/cluster-autoscaler/${each.value.cluster_name}" : "owned",
