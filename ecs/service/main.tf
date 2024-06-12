@@ -13,7 +13,7 @@ resource "aws_ecs_service" "service" {
   }
 
   dynamic "load_balancer" {
-    for_each = each.value.load_balancer
+    for_each = try(each.value.load_balancer, [])
     content {
       target_group_arn = load_balancer.value.target_group_arn
       container_name   = load_balancer.value.container_name
@@ -57,7 +57,7 @@ resource "aws_ecs_service" "service" {
   }
 
   dynamic "service_registries" {
-    for_each = each.value.service_registry_arn != "" ? [1] : []
+    for_each = try(each.value.service_registry_arn, "") != "" ? [1] : []
     content {
       registry_arn = each.value.service_registry_arn
     }

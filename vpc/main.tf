@@ -26,12 +26,12 @@ module "vpc" {
   create_database_nat_gateway_route  = false
 
   azs                   = each.value.azs
-  public_subnets        = each.value.public_subnets
-  public_subnet_names   = each.value.public_subnet_names
-  private_subnets       = each.value.private_subnets
-  private_subnet_names  = each.value.private_subnet_names
-  database_subnets      = each.value.data_subnets
-  database_subnet_names = each.value.data_subnet_names
+  public_subnets        = try(each.value.public_subnets, null)
+  public_subnet_names   = try(each.value.public_subnet_names, null)
+  private_subnets       = try(each.value.private_subnets, null)
+  private_subnet_names  = try(each.value.private_subnet_names, null)
+  database_subnets      = try(each.value.data_subnets, null)
+  database_subnet_names = try(each.value.data_subnet_names, null)
 
   default_security_group_ingress = each.value.empty_default_security_group ? [] : null
   default_security_group_egress  = each.value.empty_default_security_group ? [] : null

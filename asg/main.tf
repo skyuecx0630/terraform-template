@@ -37,7 +37,7 @@ module "asg" {
   target_group_arns         = each.value.target_group_arns
 
   scaling_policies = merge(
-    each.value.target_tracking_cpu_util != 0 ? {
+    try(each.value.target_tracking_cpu_util, 0) != 0 ? {
       avg-cpu-policy-greater-than-50 = {
         policy_type = "TargetTrackingScaling"
         target_tracking_configuration = {
@@ -48,7 +48,7 @@ module "asg" {
         }
       }
     } : {},
-    each.value.target_tracking_request_count_per_target != 0 ? {
+    try(each.value.target_tracking_request_count_per_target, 0) != 0 ? {
       request-count-per-target = {
         policy_type = "TargetTrackingScaling"
         target_tracking_configuration = {

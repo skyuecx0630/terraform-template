@@ -11,7 +11,7 @@ resource "aws_rds_cluster" "rds_cluster" {
   vpc_security_group_ids = each.value.security_group_ids
 
   port          = each.value.port
-  database_name = each.value.initial_database_name != "" ? each.value.initial_database_name : null
+  database_name = try(each.value.initial_database_name, "") != "" ? each.value.initial_database_name : null
 
   db_cluster_parameter_group_name  = aws_rds_cluster_parameter_group.rds_cluster_parameter_group[each.key].name
   db_instance_parameter_group_name = aws_db_parameter_group.rds_parameter_group[each.key].name
