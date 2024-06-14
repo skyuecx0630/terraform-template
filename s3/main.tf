@@ -24,8 +24,8 @@ module "s3_bucket" {
 
   for_each = var.buckets
 
-  bucket = each.value.name
-  # force_destroy = true
+  bucket        = each.value.name
+  force_destroy = true
 
   attach_deny_insecure_transport_policy = each.value.policy_https
   attach_elb_log_delivery_policy        = each.value.policy_elb_log

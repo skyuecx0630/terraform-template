@@ -1,7 +1,8 @@
 resource "aws_ecr_repository" "repository" {
   for_each = var.repositories
 
-  name = each.key
+  name         = each.key
+  force_delete = true
 
   dynamic "encryption_configuration" {
     for_each = try(each.value.encrypted, true) ? [1] : []
