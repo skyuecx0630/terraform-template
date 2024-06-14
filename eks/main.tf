@@ -14,8 +14,8 @@ module "eks" {
   cluster_endpoint_public_access           = each.value.cluster_endpoint_public_access
   cluster_endpoint_public_access_cidrs     = each.value.cluster_endpoint_public_access_cidrs
 
-  create_cluster_security_group = !each.value.use_fargate
-  create_node_security_group    = !each.value.use_fargate
+  create_cluster_security_group = length(each.value.node_group) > 0
+  create_node_security_group    = length(each.value.node_group) > 0
 
   fargate_profiles = each.value.use_fargate ? {
     fargate = {
