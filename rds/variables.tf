@@ -10,7 +10,9 @@ variable "rds" {
       engine_version         = "8.0"
       parameter_group_family = "aurora-mysql8.0"
 
-      instance_type = "db.t3.medium"
+      instance_type           = "db.t3.medium" # db.serverless
+      serverless_max_capacity = 2.0
+      serverless_min_capacity = 0.5
 
       master_username = "admin"
 
@@ -29,6 +31,8 @@ variable "rds" {
     #   parameter_group_family = "aurora-postgresql15"
 
     #   instance_type = "db.t3.medium"
+    #   serverless_max_capacity = 2.0
+    #   serverless_min_capacity = 0.5
 
     #   master_username = "postgres"
 

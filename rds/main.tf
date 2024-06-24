@@ -33,6 +33,14 @@ resource "aws_rds_cluster" "rds_cluster" {
     "error", "general", "slowquery", "audit"
   ] : ["postgresql"]
 
+  dynamic "serverlessv2_scaling_configuration" {
+    for_each = each.value.instance_type == "db.serverless" ? [1] : []
+
+    content {
+      max_capacity = each.value.serverless_max_capacity
+      min_capacity = each.value.serverless_min_capacity
+    }
+  }
 }
 
 resource "aws_rds_cluster_instance" "instance1" {
