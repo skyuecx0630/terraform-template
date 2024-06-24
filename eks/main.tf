@@ -19,8 +19,15 @@ module "eks" {
 
   fargate_profiles = each.value.use_fargate ? {
     fargate = {
-      name      = "fargate"
-      selectors = [{ namespace = "*" }]
+      name = "fargate"
+      selectors = [
+        {
+          namespace = "*"
+          # labels = {
+          #   "app.kubernetes.io/name" = "myapp"
+          # }
+        }
+      ]
     }
   } : {}
 
@@ -34,6 +41,9 @@ module "eks" {
       min_size     = v.min_size
       max_size     = v.max_size
       desired_size = v.desired_size
+
+      ami_type       = v.ami_type
+      instance_types = v.instance_types
 
       labels = v.labels
       taints = v.taints
@@ -71,16 +81,13 @@ module "eks" {
 
   cluster_addons = {
     coredns = {
-      most_recent = true
       configuration_values = each.value.use_fargate ? jsonencode({
         computeType = "fargate"
       }) : null
     }
     kube-proxy = {
-      most_recent = true
     }
     vpc-cni = {
-      most_recent = true
     }
   }
 
