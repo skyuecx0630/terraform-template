@@ -14,7 +14,8 @@ variable "cluster" {
       cluster_endpoint_public_access       = false
       cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]
 
-      use_fargate = false
+      fargate            = {}
+      coredns_on_fargate = false
 
       node_group = {
         ng1 = {
@@ -58,7 +59,20 @@ variable "cluster" {
     #   cluster_endpoint_public_access       = false
     #   cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]
 
-    #   use_fargate = true
+    #   fargate = {
+    #     profile1 = {
+    #       name = "coredns-profile"
+    #       selectors = [
+    #         {
+    #           namespace = "*"
+    #           labels = {
+    #             k8s-app = "kube-dns"
+    #           }
+    #         }
+    #       ]
+    #     }
+    #   }
+    #   coredns_on_fargate = true
 
     #   node_group = {}
     # }

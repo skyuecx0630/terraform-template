@@ -17,26 +17,20 @@ module "eks" {
   create_cluster_security_group = length(each.value.node_group) > 0
   create_node_security_group    = length(each.value.node_group) > 0
 
-  fargate_profiles = each.value.use_fargate ? {
-    fargate = {
-      name = "fargate"
-      selectors = [
-        {
-          namespace = "*"
-          # labels = {
-          #   "app.kubernetes.io/name" = "myapp"
-          # }
-        }
-      ]
-    }
-  } : {}
+  fargate_profiles = try(each.value.fargate, {})
 
   eks_managed_node_groups = {
     for k, v in each.value.node_group : k => {
-      name                     = v.name
-      use_name_prefix          = v.use_name_prefix
+      name            = v.name
+      use_name_prefix = v.use_name_prefix
+
+      create_iam_role          = true
       iam_role_use_name_prefix = false
       iam_role_name            = "${v.name}-role"
+
+      iam_role_additional_policies = {
+        ssm = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+      }
 
       min_size     = v.min_size
       max_size     = v.max_size
@@ -61,6 +55,7 @@ module "eks" {
           }
         }
       }
+
       subnet_ids        = each.value.subnet_ids
       enable_monitoring = true
       metadata_options = {
@@ -81,14 +76,49 @@ module "eks" {
 
   cluster_addons = {
     coredns = {
-      configuration_values = each.value.use_fargate ? jsonencode({
+      most_recent = true
+      configuration_values = each.value.coredns_on_fargate ? jsonencode({
         computeType = "fargate"
+        affinity    = null
       }) : null
     }
     kube-proxy = {
+      most_recent = true
     }
     vpc-cni = {
+      most_recent = true
     }
+
+    # eks-pod-identity-agent = {
+    #   most_recent = true
+    # }
+    # aws-efs-csi-driver = {
+    #   most_recent = true
+    # }
+    amazon-cloudwatch-observability = {
+      most_recent = true
+      configuration_values = jsonencode({
+        containerLogs = {
+          fluentBit = {
+            config = {
+              service       = file("fluentbit/fluent-bit.conf")
+              customParsers = file("fluentbit/parsers.conf")
+              extraFiles = {
+                "application-log.conf" = file("fluentbit/application-log.conf")
+                "dataplane-log.conf"   = file("fluentbit/dataplane-log.conf")
+                "host-log.conf"        = file("fluentbit/host-log.conf")
+              }
+            }
+          }
+        }
+      })
+    }
+
+    # # For Configuration Schema
+    # export K8S_VERSION="1.29"
+    # export ADDON_NAME="eks-pod-identity-agent"
+    # export ADDON_VERSION=$(aws eks describe-addon-versions --kubernetes-version $K8S_VERSION --addon-name $ADDON_NAME --query addons[].addonVersions[0].addonVersion --output text)
+    # aws eks describe-addon-configuration --addon-name $ADDON_NAME --addon-version $ADDON_VERSION --query configurationSchema --output text | jq 
   }
 
   cluster_enabled_log_types = ["audit", "api", "authenticator", "scheduler", "controllerManager"]
