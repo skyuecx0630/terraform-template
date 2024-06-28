@@ -8,3 +8,12 @@ terraform {
 
   required_version = ">= 1.7.5"
 }
+
+provider "aws" {
+  default_tags {
+    tags = {
+      "project" = "skills"
+      "owner"   = "hmoon"
+    }
+  }
+}
