@@ -4,7 +4,8 @@ module "eks" {
 
   for_each = var.cluster
 
-  cluster_name = each.value.cluster_name
+  cluster_name    = each.value.cluster_name
+  cluster_version = each.value.cluster_version
 
   vpc_id                   = each.value.vpc_id
   subnet_ids               = each.value.subnet_ids
