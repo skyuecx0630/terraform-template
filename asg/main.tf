@@ -33,8 +33,19 @@ module "asg" {
   security_groups     = each.value.security_group_ids
 
   health_check_type         = each.value.health_check_type
-  health_check_grace_period = 60
-  target_group_arns         = each.value.target_group_arns
+  health_check_grace_period = each.value.health_check_type == "ELB" ? 60 : 120
+
+  instance_refresh = {
+    strategy = "Rolling"
+    preferences = {
+      # instance_warmup is same with health_check_grace_period
+      min_healthy_percentage = 100
+      max_healthy_percentage = 200
+      skip_matching          = true
+    }
+    ## A refresh will always be triggered by a change of launch_template
+    # triggers = ["launch_template"]
+  }
 
   scaling_policies = merge(
     try(each.value.target_tracking_cpu_util, 0) != 0 ? {
@@ -98,14 +109,31 @@ module "asg" {
     "GroupTotalInstances"
   ]
 
-  tag_specifications = [
-    {
-      resource_type = "instance"
-      tags = {
-        "Name" = each.value.instance_name
-      }
-    }
-  ]
+  autoscaling_group_tags = {
+    "Name" = each.value.instance_name
+  }
 
   tags = data.aws_default_tags.default.tags
+}
+
+resource "aws_autoscaling_traffic_source_attachment" "target_group_attachment_1" {
+  for_each = { for k, v in var.asg : k => v.target_group_arns[0] if length(v.target_group_arns) > 0 }
+
+  autoscaling_group_name = module.asg[each.key].autoscaling_group_name
+
+  traffic_source {
+    identifier = each.value
+    type       = "elbv2"
+  }
+}
+
+resource "aws_autoscaling_traffic_source_attachment" "target_group_attachment_2" {
+  for_each = { for k, v in var.asg : k => v.target_group_arns[1] if length(v.target_group_arns) > 1 }
+
+  autoscaling_group_name = module.asg[each.key].autoscaling_group_name
+
+  traffic_source {
+    identifier = each.value
+    type       = "elbv2"
+  }
 }

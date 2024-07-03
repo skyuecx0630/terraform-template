@@ -22,7 +22,7 @@ variable "asg" {
       security_group_ids = ["sg-0ced96d3a74f24979"]
 
       health_check_type = "EC2" # "EC2" or "ELB"
-      target_group_arns = [
+      target_group_arns = [     # Max 2 target groups. Order matters
         "arn:aws:elasticloadbalancing:us-east-1:856210586235:targetgroup/skills-myapp-tg/87a03cc0b3164bff",
         "arn:aws:elasticloadbalancing:us-east-1:856210586235:targetgroup/skills-myapp-sampling-tg/a0c498a69edaff8d"
       ]
