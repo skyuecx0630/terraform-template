@@ -1,19 +1,10 @@
-provider "aws" {
-  default_tags {
-    tags = {
-      "project" = "skills"
-      "owner"   = "hmoon"
-    }
-  }
-}
-
 module "kms_key" {
   source  = "terraform-aws-modules/kms/aws"
   version = "~> 3.0"
 
   for_each = { for k, v in var.buckets : k => v if v.enable_kms_encryption }
 
-  aliases             = ["alias/s3/${each.value.name}"]
+  aliases             = ["s3/${each.value.name}"]
   enable_key_rotation = true
   description         = "KMS key for encrypting S3 bucket objects"
 }
