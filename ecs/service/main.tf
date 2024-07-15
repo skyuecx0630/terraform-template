@@ -6,6 +6,11 @@ resource "aws_ecs_service" "service" {
 
   task_definition = each.value.task_definition
 
+  desired_count = 2
+  lifecycle {
+    ignore_changes = [desired_count]
+  }
+
   network_configuration {
     assign_public_ip = each.value.assign_public_ip
     security_groups  = each.value.security_groups
