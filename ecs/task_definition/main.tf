@@ -11,6 +11,17 @@ resource "aws_ecs_task_definition" "task_definition" {
   execution_role_arn = aws_iam_role.task_execution_role[each.key].arn
   task_role_arn      = aws_iam_role.task_role[each.key].arn
 
+  # volume {
+  #   efs_volume_configuration {
+  #     file_system_id     = "fs-0dc8be2227398bd81"
+  #     transit_encryption = "ENABLED"
+  #     authorization_config {
+  #       access_point_id = "fsap-0ec6bdaa80aff5ddf"
+  #     }
+  #   }
+  #   name = "efs"
+  # }
+
   container_definitions = jsonencode([for k, v in each.value.container_definitions : {
     name      = v.name
     image     = v.image
@@ -21,6 +32,13 @@ resource "aws_ecs_task_definition" "task_definition" {
         hostPort      = v.port
       }
     ]
+    # mountPoints = [
+    #   {
+    #     sourceVolume  = "efs"
+    #     containerPath = "/efs"
+    #     readOnly      = false
+    #   }
+    # ]
     healthcheck = {
       command = ["CMD-SHELL", "curl -f http://localhost:${v.port}${v.healthcheck_path} || exit 1"]
     }
