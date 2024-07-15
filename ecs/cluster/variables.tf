@@ -1,51 +1,26 @@
-variable "resource_name_tag_perfix" {
+variable "ecs_optimized_ami" {
   type        = string
-  description = "Prefix for resource name tag"
-  default     = "skills"
+  description = "SSM parameter ecs_optimized_ami"
+  default     = "/aws/service/ecs/optimized-ami/amazon-linux-2023/recommended"
+  # default     = "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended"
 }
 
-variable "cluster_name" {
-  type        = string
-  description = "The name of the cluster"
-  default     = "skills-cluster"
-}
+variable "cluster" {
+  type        = any
+  description = "Map for ECS Cluster"
+  default = {
+    cluster = {
+      name = "skills-cluster"
 
-variable "use_fargate" {
-  type        = bool
-  description = "Use Fargate or not"
-  default     = true
-}
+      enable_fargate = true
+      enable_asg     = false
 
-###########################################################
-# Auto scaling group setups
-###########################################################
+      asg_name          = "skills-cluster-worker"
+      asg_instance_name = "skills-cluster-worker"
+      asg_instance_type = "t3.small"
 
-variable "asg_name" {
-  type        = string
-  description = "Name of ASG"
-  default     = "skills-cluster-worker"
-}
-
-variable "instance_name" {
-  type        = string
-  description = "Name of instance"
-  default     = "skills-cluster-worker"
-}
-
-variable "instance_type" {
-  type        = string
-  description = "EC2 instance type"
-  default     = "t3.small"
-}
-
-variable "security_group_id" {
-  type        = string
-  description = "Security group id"
-  default     = "sg-037845c29b8f81e37"
-}
-
-variable "subnet_ids" {
-  type        = list(string)
-  description = "Subnet ids"
-  default     = ["subnet-0227c0887f7f841f0", "subnet-0f3d271ec01045dd3"]
+      asg_security_group_ids = ["sg-02c94423f99b300c9"]
+      asg_subnet_ids         = ["subnet-0da434b7a5ba13737", "subnet-0f44a995e7e181d92"]
+    }
+  }
 }

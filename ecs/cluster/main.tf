@@ -1,11 +1,19 @@
+data "aws_default_tags" "default" {}
+data "aws_ssm_parameter" "ecs_optimized_ami" {
+  name = var.ecs_optimized_ami
+}
+
 module "ecs_cluster" {
-  source = "terraform-aws-modules/ecs/aws"
+  source  = "terraform-aws-modules/ecs/aws"
+  version = "~> 5.11"
 
-  cluster_name = var.cluster_name
+  for_each = var.cluster
 
-  default_capacity_provider_use_fargate = var.use_fargate
+  cluster_name = each.value.name
 
-  fargate_capacity_providers = (var.use_fargate ? {
+  default_capacity_provider_use_fargate = each.value.enable_fargate
+
+  fargate_capacity_providers = (each.value.enable_fargate ? {
     FARGATE = {
       default_capacity_provider_strategy = {
         weight = 50
@@ -14,18 +22,18 @@ module "ecs_cluster" {
     }
   } : {})
 
-  autoscaling_capacity_providers = var.use_fargate ? {} : {
+  autoscaling_capacity_providers = each.value.enable_asg ? {
     asg = {
-      auto_scaling_group_arn = module.asg.autoscaling_group_arn
+      auto_scaling_group_arn = module.asg[each.key].autoscaling_group_arn
 
       managed_scaling = {
         maximum_scaling_step_size = 8
         minimum_scaling_step_size = 1
         status                    = "ENABLED"
-        target_capacity           = 80
+        target_capacity           = 100
       }
     }
-  }
+  } : {}
 
 }
 
@@ -33,45 +41,52 @@ module "ecs_cluster" {
 # Auto scaling group
 ###########################################################
 
-data "aws_ssm_parameter" "ecs_optimized_ami" {
-  name = "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended"
-}
-
 module "asg" {
   source  = "terraform-aws-modules/autoscaling/aws"
   version = "~> 7.6"
-  create  = !var.use_fargate
 
-  name = var.asg_name
+  for_each = { for k, v in var.cluster : k => v if v.enable_asg }
 
-  desired_capacity = 2
-  min_size         = 2
-  max_size         = 8
+  name = each.value.asg_name
+
+  min_size                        = 2
+  max_size                        = 8
+  ignore_desired_capacity_changes = true
 
   image_id      = jsondecode(data.aws_ssm_parameter.ecs_optimized_ami.value)["image_id"]
-  instance_type = var.instance_type
+  instance_type = each.value.asg_instance_type
+
+  vpc_zone_identifier = each.value.asg_subnet_ids
+  security_groups     = each.value.asg_security_group_ids
 
   user_data = base64encode(
     <<-EOT
       #!/bin/bash
 
       cat <<'EOF' >> /etc/ecs/ecs.config
-      ECS_CLUSTER=${var.cluster_name}
+      ECS_CLUSTER=${each.value.name}
       ECS_LOGLEVEL=debug
       EOF
     EOT
   )
-  ignore_desired_capacity_changes = false
 
-  create_iam_instance_profile = !var.use_fargate
-  iam_role_name               = "${var.instance_name}-role"
+  instance_refresh = {
+    strategy = "Rolling"
+    preferences = {
+      # instance_warmup is same with health_check_grace_period
+      min_healthy_percentage = 100
+      max_healthy_percentage = 200
+      skip_matching          = true
+    }
+    ## A refresh will always be triggered by a change of launch_template
+    # triggers = ["launch_template"]
+  }
+
+  create_iam_instance_profile = true
+  iam_role_name               = "${each.value.asg_name}-role"
   iam_role_policies = {
     AmazonEC2ContainerServiceforEC2Role = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
     AmazonSSMManagedInstanceCore        = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-  }
-
-  autoscaling_group_tags = {
-    AmazonECSManaged = true
   }
 
   enable_monitoring = true
@@ -91,15 +106,12 @@ module "asg" {
   metadata_options = {
     http_endpoint               = "enabled"
     http_tokens                 = "required"
-    http_put_response_hop_limit = 2
+    http_put_response_hop_limit = 1
+  }
+  autoscaling_group_tags = {
+    "AmazonECSManaged" = true
+    "Name"             = each.value.asg_instance_name
   }
 
-  tag_specifications = [
-    {
-      resource_type = "instance"
-      tags = {
-        "Name" = var.instance_name
-      }
-    }
-  ]
+  tags = data.aws_default_tags.default.tags
 }
