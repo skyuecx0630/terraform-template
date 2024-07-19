@@ -20,6 +20,8 @@ module "s3_bucket" {
 
   attach_deny_insecure_transport_policy = each.value.policy_https
   attach_elb_log_delivery_policy        = each.value.policy_elb_log
+  control_object_ownership              = each.value.policy_elb_log
+  object_ownership                      = "BucketOwnerPreferred"
 
   server_side_encryption_configuration = {
     rule = {
