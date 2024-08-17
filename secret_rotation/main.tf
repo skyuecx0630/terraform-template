@@ -10,8 +10,10 @@ resource "aws_lambda_function" "rotation_function" {
 
   timeout = 30
 
-  s3_bucket = "secrets-manager-rotation-apps-4a140910bc981d6b51d3a088522e3fe2"
-  s3_key    = "SecretsManagerRDSMySQLRotationSingleUser/SecretsManagerRDSMySQLRotationSingleUser.zip"
+  # s3_bucket = "secrets-manager-rotation-apps-4a140910bc981d6b51d3a088522e3fe2"
+  # s3_key    = "SecretsManagerRDSMySQLRotationSingleUser/SecretsManagerRDSMySQLRotationSingleUser.zip"
+
+  filename = "SecretsManagerRDSMySQLRotationSingleUser.zip"
 
   vpc_config {
     subnet_ids         = var.rotation_function.subnet_ids
