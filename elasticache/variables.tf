@@ -14,7 +14,7 @@ variable "cache" {
 
       node_type          = "cache.t2.micro"
       shard_count        = 2 # ignored if cluster is disabled
-      replicas_per_shard = 2 # primary + replicas = 3 nodes
+      replicas_per_shard = 1 # primary + replicas = 3 nodes
 
       port               = 6379
       subnet_ids         = ["subnet-02db9e8b8d788f7d6", "subnet-0a69a201606ca801b"]
