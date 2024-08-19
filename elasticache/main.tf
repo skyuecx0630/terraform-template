@@ -20,7 +20,8 @@ resource "aws_elasticache_replication_group" "cache" {
   automatic_failover_enabled = true
 
   at_rest_encryption_enabled = true
-  transit_encryption_enabled = each.value.transit_encryption_enabled
+  transit_encryption_enabled = true
+  transit_encryption_mode    = each.value.transit_encryption_enabled ? "preferred" : "required"
 
   snapshot_retention_limit = 1
 
