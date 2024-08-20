@@ -23,11 +23,12 @@ module "eks" {
   eks_managed_node_groups = {
     for k, v in each.value.node_group : k => {
       name            = v.name
-      use_name_prefix = v.use_name_prefix
+      use_name_prefix = false
 
-      create_iam_role          = true
+      create_iam_role          = v.iam_role_arn != null ? false : true
+      iam_role_name            = v.iam_role_arn != null ? null : "${v.name}-role"
       iam_role_use_name_prefix = false
-      iam_role_name            = "${v.name}-role"
+      iam_role_arn             = v.iam_role_arn
 
       iam_role_additional_policies = {
         ssm = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"

@@ -5,7 +5,7 @@ variable "cluster" {
   default = {
     cluster = {
       cluster_name    = "skills-cluster"
-      cluster_version = "1.29"
+      cluster_version = "1.30"
 
       vpc_id                   = "vpc-0ece3b0f4e007c367"
       subnet_ids               = ["subnet-0227c0887f7f841f0", "subnet-0f3d271ec01045dd3"]
@@ -19,9 +19,10 @@ variable "cluster" {
 
       node_group = {
         ng1 = {
-          name            = "skills-worker-ng"
-          worker_name     = "skills-worker"
-          use_name_prefix = false
+          name         = "skills-worker-ng"
+          worker_name  = "skills-worker"
+          iam_role_arn = null
+          # iam_role_arn = ""
 
           min_size     = 2
           max_size     = 8
