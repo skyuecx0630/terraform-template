@@ -21,7 +21,8 @@ resource "aws_elasticache_replication_group" "cache" {
 
   at_rest_encryption_enabled = true
   transit_encryption_enabled = true
-  transit_encryption_mode    = each.value.transit_encryption_enabled ? "preferred" : "required"
+  transit_encryption_mode    = each.value.transit_encryption_enabled ? "required" : "preferred"
+  apply_immediately          = true
 
   snapshot_retention_limit = 1
 
