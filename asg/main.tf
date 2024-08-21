@@ -13,8 +13,10 @@ module "asg" {
 
   key_name = each.value.key_pair
 
-  create_iam_instance_profile = each.value.iam_role_name != null ? false : true
-  iam_role_name               = each.value.iam_role_name != null ? each.value.iam_role_name : "${each.value.name}-role"
+  iam_instance_profile_name   = each.value.iam_instance_profile_name
+  create_iam_instance_profile = each.value.iam_instance_profile_name == null ? true : false
+  iam_role_name               = each.value.iam_instance_profile_name == null ? "${each.value.name}-role" : null
+
   iam_role_policies = {
     AmazonSSMManagedInstanceCore  = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
     CloudWatchAgentServerPolicy   = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"

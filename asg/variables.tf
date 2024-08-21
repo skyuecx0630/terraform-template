@@ -7,10 +7,10 @@ variable "asg" {
       name          = "skills-myapp"
       instance_name = "skills-myapp"
 
-      ami_id        = "ami-01bc990364452ab3e"
-      instance_type = "t3.medium"
-      key_pair      = null
-      iam_role_name = null # "skills-myapp-role"
+      ami_id                    = "ami-01bc990364452ab3e"
+      instance_type             = "t3.medium"
+      key_pair                  = null
+      iam_instance_profile_name = null # "skills-myapp-role"
 
       enable_user_data = true
       user_data_path   = "./userdata.sh"
