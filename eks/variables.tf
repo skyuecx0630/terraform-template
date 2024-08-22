@@ -19,10 +19,11 @@ variable "cluster" {
 
       node_group = {
         ng1 = {
-          name         = "skills-worker-ng"
-          worker_name  = "skills-worker"
-          iam_role_arn = null
-          # iam_role_arn = ""
+          name               = "skills-worker-ng"
+          worker_name        = "skills-worker"
+          metadata_hop_limit = 2
+          iam_role_arn       = null
+          # iam_role_arn       = ""
 
           min_size     = 2
           max_size     = 8
